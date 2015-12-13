@@ -1,6 +1,6 @@
 <?php
 
-namespace Leaf\Pcntl\ProcessPool;
+namespace Leaf\Pcntl\ProcessPool\Base;
 
 use Leaf\Pcntl\Process;
 
@@ -26,5 +26,7 @@ interface ProcessPoolInterface
      * @return mixed
      */
     public function execute();
+
+    public function wait();
 
 }

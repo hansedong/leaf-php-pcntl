@@ -30,42 +30,22 @@ class ProcessPoolFixed extends ProcessPoolAbstract
     protected $currentProcessNum = 0;
 
     /**
-     * Put a process in the pool, then you can start them by self::execute
-     *
-     * @param Process $process
-     *
-     * @return $this
+     * @var array
      */
+    protected $processPool = [];
+
     public function addProcess(Process $process)
     {
         //check if the process has the correct pid
-        $pid = $process->getPid();
-        if ( !empty( $pid )) {
-            $this->processPool[$pid] = $process;
+        if ( !empty( $process->getPid() )) {
+            $this->pool[] = $process;
         }
         else {
             throw new \InvalidArgumentException('the process is invaliad!');
         }
-
-        return $this;
     }
 
-    /**
-     * start the processes in the pool
-     */
     public function execute()
-    {
-        if ( !empty( $this->processPool )) {
-            foreach ($this->processPool as $process) {
-                $process->start();
-            }
-        }
-    }
-
-    /**
-     *
-     */
-    public function wait()
     {
 
     }
