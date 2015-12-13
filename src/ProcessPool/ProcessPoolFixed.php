@@ -2,12 +2,12 @@
 
 namespace Leaf\Pcntl\ProcessPool;
 
-use Leaf\Pcntl\Process;
 use Leaf\Pcntl\ProcessPool\Base\ProcessPoolAbstract;
 
 /**
  * Class ProcessPoolFixed
- * process pool manager. It's designed as PHP-FPM. you can set  a fixed number of  child processes
+ * it is a process pool with a fixed number, you can use it when you have some one time tasks. it's not applicable for
+ * background workers such as queue workers.
  *
  * @package Leaf\Pcntl\ProcessPool
  */
@@ -20,7 +20,7 @@ class ProcessPoolFixed extends ProcessPoolAbstract
      *
      * @var int
      */
-    protected $fixedProcessNum = 2;
+    protected $fixedProcessNum = 5;
 
     /**
      * the current number of processes
@@ -30,36 +30,38 @@ class ProcessPoolFixed extends ProcessPoolAbstract
     protected $currentProcessNum = 0;
 
     /**
-     * Put a process in the pool, then you can start them by self::execute
+     * set the fixed process number of the pool
      *
-     * @param Process $process
+     * @param int $num
      *
      * @return $this
      */
-    public function addProcess(Process $process)
+    public function setFixedProcessNumber($num)
     {
-        //check if the process has the correct pid
-        $pid = $process->getPid();
-        if ( !empty( $pid )) {
-            $this->processPool[$pid] = $process;
-        }
-        else {
-            throw new \InvalidArgumentException('the process is invaliad!');
+        if ( !empty( $num ) && is_int($num)) {
+            $this->fixedProcessNum = $num;
         }
 
         return $this;
     }
 
     /**
-     * start the processes in the pool
+     * start all the processes in the pool with a fixed number
+     * if the numbers of processes if more than the fixed process number, the pool will wait for process
+     *
+     * @return $this
      */
     public function execute()
     {
         if ( !empty( $this->processPool )) {
-            foreach ($this->processPool as $process) {
-                $process->start();
+            foreach ($this->processPool as $pid => $process) {
+                if (( $process->getRunningStatus() === 0 )) {
+                    $process->start();
+                }
             }
         }
+
+        return $this;
     }
 
     /**

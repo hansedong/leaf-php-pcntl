@@ -16,9 +16,9 @@ abstract class ProcessPoolAbstract implements ProcessPoolInterface
      * @var array Process
      */
     protected $processPool = [];
-
+    
     /**
-     * add process to this pool
+     * Put a process in the pool, then you can start them by self::execute
      *
      * @param Process $process
      *
@@ -26,7 +26,16 @@ abstract class ProcessPoolAbstract implements ProcessPoolInterface
      */
     public function addProcess(Process $process)
     {
+        //check if the process has the correct pid
+        $pid = $process->getPid();
+        if ( !empty( $pid )) {
+            $this->processPool[$pid] = $process;
+        }
+        else {
+            throw new \InvalidArgumentException('the process is invaliad!');
+        }
 
+        return $this;
     }
 
     /**
