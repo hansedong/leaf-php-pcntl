@@ -12,20 +12,11 @@ use Leaf\Pcntl\Process;
 interface ProcessPoolInterface
 {
     /**
-     * add process to this pool
-     *
-     * @param Process $process
-     *
-     * @return $this
-     */
-    public function addProcess(Process $process);
-
-    /**
      * execute the process pool
      *
      * @return mixed
      */
-    public function execute();
+    public function execute(Process $process);
 
     public function wait();
 

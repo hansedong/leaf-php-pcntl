@@ -56,6 +56,28 @@ class Process
     protected $signalHandlers = [];
 
     /**
+     * the frequency of the signal dispatch
+     * the measuring unit is milliseconds
+     *
+     * @var int
+     */
+    protected $signalDispatchfrequency = 200;
+
+    /**
+     * the callbacks executed before process task of current process
+     *
+     * @var array
+     */
+    protected $beforeProcessCallBack = [];
+
+    /**
+     * the callbacks executed after process task of current process
+     *
+     * @var array
+     */
+    protected $afterProcessCallBack = [];
+
+    /**
      * Process constructor.
      *
      * @param mixed $callBack
@@ -197,17 +219,17 @@ class Process
      * start this process
      * when started, the system will fork a process
      *
-     * @return bool
+     * @return int if the current process is parent, return the process id of the forked process
      */
     public function start()
     {
-        $return = false;
+        $return = 0;
         //if this process has got a pid and has running,then return false
         if ( !empty( $this->getPid() ) && ( $this->getRunningStatus() === 0 )) {
             return $return;
         }
         //start the process
-        if (empty( $this->getPid() ) && ( $this->runningStatus === 0 )) {
+        if (empty( $this->getPid() ) && ( $this->getRunningStatus() === 0 )) {
             //check the callback function of the process
             $callback = $this->getTask();
             if ( !is_callable($callback)) {
@@ -218,19 +240,13 @@ class Process
             if ($pid < 0) {
                 throw new \RuntimeException("fork error");
             }
-            //parent process
-            elseif ($pid == 0) {
-
-            }
             //children process
+            elseif ($pid == 0) {
+                $this->runCurrentProcess();
+            }
+            //current parent process
             else {
-                //update the process status as running already
-                $this->updateRunningStatus($pid, 1);
-                //enable signal handlers if setted
-                $this->enableSignalHandlers();
-                //call the callback function
-                call_user_func($this->getTask());
-                $return = true;
+                $return = $pid;
             }
         }
 
@@ -238,7 +254,62 @@ class Process
     }
 
     /**
-     * enable signal handlers if setted before
+     * run current process
+     * set running status、set signal handlers、execure callback task
+     */
+    protected function runCurrentProcess()
+    {
+        $pid = getmypid();
+        //update the process status as running already
+        $this->updateRunningStatus($pid, 1);
+        //enable signal handlers if setted
+        $this->enableSignalHandlers();
+        //execure the callback before this process task
+        $this->executeBeforeProcessCallBack();
+        //execure the callback task
+        call_user_func($this->getTask());
+        //execure the callback after this process task
+        $this->executeBeforeProcessCallBack();
+        //exit the process
+        exit( 0 );
+    }
+
+    /**
+     * execure the callback before current process task
+     *
+     * @return $this
+     */
+    protected function executeBeforeProcessCallBack()
+    {
+        $beforeCallBack = $this->beforeProcessCallBack;
+        if ( !empty( $beforeCallBack )) {
+            foreach ($beforeCallBack as $callback) {
+                call_user_func($callback);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * execure the callback after current process task
+     *
+     * @return $this
+     */
+    protected function executeAfterProcessCallBack()
+    {
+        $afterCallBack = $this->afterProcessCallBack;
+        if ( !empty( $afterCallBack )) {
+            foreach ($afterCallBack as $callback) {
+                call_user_func($callback);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * enable signal handlers that you setted before
      *
      * @return $this
      */
@@ -257,13 +328,13 @@ class Process
     }
 
     /**
-     * listen signals sended to this process, and then the signal handler will handle it
-     * note: we do not use declare(ticks = 1) to check signals because it is very inefficient and is unnessary
+     * listen signals sended to this process, when received , the signal handler will then handle it
+     * we do not use declare(ticks = 1) to check signals because it is very inefficient and it is not unnessary
      */
     protected function listenSignals()
     {
         while (true) {
-            usleep(200);
+            usleep($this->signalDispatchfrequency);
             pcntl_signal_dispatch();
 
         }

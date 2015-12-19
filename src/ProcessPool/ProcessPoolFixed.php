@@ -2,6 +2,7 @@
 
 namespace Leaf\Pcntl\ProcessPool;
 
+use Leaf\Pcntl\Process;
 use Leaf\Pcntl\ProcessPool\Base\ProcessPoolAbstract;
 
 /**
@@ -47,29 +48,47 @@ class ProcessPoolFixed extends ProcessPoolAbstract
 
     /**
      * start all the processes in the pool with a fixed number
-     * if the numbers of processes if more than the fixed process number, the pool will wait for process
+     * if the number of processes is more than the fixed process number, the pool will wait until it less than the
+     * fixed number
+     * you should be clear that this method aims to start the process's task, not to start the process
      *
      * @return $this
      */
-    public function execute()
+    public function execute(Process $process)
     {
-        if ( !empty( $this->processPool )) {
-            foreach ($this->processPool as $pid => $process) {
-                if (( $process->getRunningStatus() === 0 )) {
-                    $process->start();
-                }
-            }
+        //check the running status of the process
+        if ($process->getRunningStatus() === 0 && is_callable($process->getTask())) {
+            $pid = $process->start();
+            $this->processPool[$pid] = $pid;
+        }
+        elseif ($process->getRunningStatus() === 1) {
+            throw new \InvalidArgumentException('the process is invalid: it is already running!');
+        }
+        elseif ( !is_callable($process->getTask())) {
+            throw new \InvalidArgumentException('the process is invalid: the process has a invalid callback task!');
         }
 
         return $this;
     }
 
     /**
+     * wait until all the children processes are exited
      *
+     * @param int $sleep
      */
-    public function wait()
+    public function wait($sleep = 200)
     {
+        while (count($this->processPool) > 0) {
+            foreach ($this->processPool as $key => $pid) {
+                $res = pcntl_waitpid($pid, $status, WNOHANG);
+                // If the process has already exited
+                if ($res == -1 || $res > 0) {
+                    unset( $this->processPool[$key] );
+                }
+            }
 
+            usleep($sleep);
+        }
     }
 
 }
