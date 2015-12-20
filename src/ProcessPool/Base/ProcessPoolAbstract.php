@@ -13,26 +13,24 @@ abstract class ProcessPoolAbstract implements ProcessPoolInterface
 {
 
     /**
-     * @var array Process
+     * processes in the poll
+     *
+     * @var array
      */
     protected $processPool = [];
 
-    /**
-     * Put a process in the pool, and then execute the process
-     *
-     * @return mixed
-     */
     public function execute(Process $process)
     {
-
     }
 
     /**
-     * wait for children process to exit
+     * get the number of running process
+     *
+     * @return int
      */
-    public function wait()
+    public function getRunningProcessesNumber()
     {
-
+        return count($this->processPool);
     }
 
 }

@@ -2,6 +2,10 @@
 
 namespace Leaf\Pcntl;
 
+use Leaf\Pcntl\ProcessPool\ProcessPoolDynamic;
+use Leaf\Pcntl\ProcessPool\ProcessPoolStatic;
+use Leaf\Pcntl\ProcessPool\ProcessPoolNormal;
+
 /**
  * Class ProcessPool
  * process pool manager. It's designed as PHP-FPM. you can set a min/max child processes for this manager for the
@@ -11,41 +15,75 @@ namespace Leaf\Pcntl;
  */
 class ProcessPool
 {
-    /**
-     * the min child processes
-     * the number of child processes are set dynamically
-     *
-     * @var int
-     */
-    protected $minProcessNum = 2;
-
-    /*
-     * the min child processes
-     * the number of child processes are set dynamically
-     */
-    protected $maxProcessNum = 5;
 
     /**
-     * the fixed number of child process
-     * a fixed number of child processes
+     * process pool mode
      *
-     * @var int
+     * @var string it can be 'normal'、'static'、'dynamic' etc.
      */
-    protected $fixedProcessNum = 2;
+    protected $mode = 'normal';
 
     /**
-     * the current number of processes
+     * the type of the pool
      *
-     * @var int
+     * @var ProcessPoolStatic|ProcessPoolNormal|ProcessPoolDynamic
      */
-    protected $currentProcessNum = 0;
+    protected $pool = null;
 
-    protected $processMode = '';
-
-
-    public function addProcess(Process $process)
+    /**
+     * ProcessPool constructor.
+     *
+     * @param string $mode
+     */
+    public function __construct($mode = 'normal')
     {
+        if (in_array($mode, ['normal', 'static', 'dynamic'])) {
+            $this->mode = $mode;
+            $this->initProcessPool();
+        }
+        else {
+            throw new \InvalidArgumentException('the running mode of the process pool is invalid! the mode can be
+            normal、static、dynamic etc.');
+        }
+    }
 
+    /**
+     * init process pool according to the process type
+     *
+     * @return $this
+     */
+    protected function initProcessPool()
+    {
+        switch ($this->mode) {
+            case 'static':
+                $pool = new ProcessPoolFixed();
+                break;
+            case 'dynamic':
+                $pool = new ProcessPoolDynamic();
+                break;
+            default:
+                $pool = new ProcessPoolNormal();
+        }
+        $this->pool = $pool;
+
+        return $this;
+    }
+
+    public function execute(Process $process)
+    {
+        return $this->pool->execute($process);
+    }
+
+    public function __call($name, $arguments)
+    {
+        if (is_callable([$this->pool, 'wait'])) {
+            if (isset( $arguments[0] )) {
+                $this->pool->$name($arguments[0]);
+            }
+            else {
+                $this->pool->$name();
+            }
+        }
     }
 
 }

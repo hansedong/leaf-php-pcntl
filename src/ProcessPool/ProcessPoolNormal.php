@@ -6,13 +6,13 @@ use Leaf\Pcntl\Process;
 use Leaf\Pcntl\ProcessPool\Base\ProcessPoolAbstract;
 
 /**
- * Class ProcessPoolFixed
+ * Class ProcessPoolNormal
  * it is a process pool with a fixed number, you can use it when you have some one time tasks. it's not applicable for
  * background workers such as queue workers.
  *
  * @package Leaf\Pcntl\ProcessPool
  */
-class ProcessPoolFixed extends ProcessPoolAbstract
+class ProcessPoolNormal extends ProcessPoolAbstract
 {
 
     /**
@@ -31,26 +31,9 @@ class ProcessPoolFixed extends ProcessPoolAbstract
     protected $currentProcessNum = 0;
 
     /**
-     * set the fixed process number of the pool
+     * put a process into the pool and then start it immediately
      *
-     * @param int $num
-     *
-     * @return $this
-     */
-    public function setFixedProcessNumber($num)
-    {
-        if ( !empty( $num ) && is_int($num)) {
-            $this->fixedProcessNum = $num;
-        }
-
-        return $this;
-    }
-
-    /**
-     * start all the processes in the pool with a fixed number
-     * if the number of processes is more than the fixed process number, the pool will wait until it less than the
-     * fixed number
-     * you should be clear that this method aims to start the process's task, not to start the process
+     * @param Process $process
      *
      * @return $this
      */
@@ -73,12 +56,14 @@ class ProcessPoolFixed extends ProcessPoolAbstract
 
     /**
      * wait until all the children processes are exited
+     * when this method called, the parent process will wait until all the children processes are exited, it checks
+     * the alive number of processes per 200ms as default
      *
      * @param int $sleep
      */
     public function wait($sleep = 200)
     {
-        while (count($this->processPool) > 0) {
+        while ($this->getRunningProcessesNumber() > 0) {
             foreach ($this->processPool as $key => $pid) {
                 $res = pcntl_waitpid($pid, $status, WNOHANG);
                 // If the process has already exited

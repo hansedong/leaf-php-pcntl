@@ -18,6 +18,7 @@ interface ProcessPoolInterface
      */
     public function execute(Process $process);
 
-    public function wait();
+    public function getRunningProcessesNumber();
+
 
 }

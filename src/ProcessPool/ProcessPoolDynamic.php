@@ -11,43 +11,21 @@ use Leaf\Pcntl\ProcessPool\Base\ProcessPoolAbstract;
  *
  * @package Leaf\Pcntl\ProcessPool
  */
-class ProcessPoolFixed extends ProcessPoolAbstract
+class ProcessPoolDynamic extends ProcessPoolAbstract
 {
 
     /**
-     * the fixed number of child process
-     * a fixed number of child processes
+     * the min child processes
+     * the number of child processes are set dynamically
      *
      * @var int
      */
-    protected $fixedProcessNum = 2;
+    protected $minProcessNum = 2;
 
-    /**
-     * the current number of processes
-     *
-     * @var int
+    /*
+     * the min child processes
+     * the number of child processes are set dynamically
      */
-    protected $currentProcessNum = 0;
-
-    /**
-     * @var array
-     */
-    protected $processPool = [];
-
-    public function addProcess(Process $process)
-    {
-        //check if the process has the correct pid
-        if ( !empty( $process->getPid() )) {
-            $this->pool[] = $process;
-        }
-        else {
-            throw new \InvalidArgumentException('the process is invaliad!');
-        }
-    }
-
-    public function execute()
-    {
-
-    }
+    protected $maxProcessNum = 5;
 
 }

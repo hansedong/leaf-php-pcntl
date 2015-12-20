@@ -267,11 +267,24 @@ class Process
         //execure the callback before this process task
         $this->executeBeforeProcessCallBack();
         //execure the callback task
-        call_user_func($this->getTask());
+        $this->executeTask();
         //execure the callback after this process task
         $this->executeBeforeProcessCallBack();
         //exit the process
         exit( 0 );
+    }
+
+    /**
+     * execure the callback task
+     *
+     * @return $this
+     */
+    protected function executeTask()
+    {
+        //execure the callback task
+        call_user_func($this->getTask());
+
+        return $this;
     }
 
     /**
