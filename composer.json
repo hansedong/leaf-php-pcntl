@@ -2,12 +2,22 @@
   "name": "leaf/leaf-php-pcntl",
   "version": "0.1.0",
   "type": "library",
+  "homepage": "https://www.leafphp.com",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "hongshuai dong",
+      "email": "663280439@qq.com",
+      "homepage": "http://www.leafphp.com"
+    }
+  ],
   "description": "一个基于pcntl并包含了如：PHP的多进程管理、通信处理等，可用于多任务以及异步处理的PHP包",
   "keywords": [
+    "php 多进程",
+    "pcntl",
+    "php pcntl"
   ],
-  "license": "MIT",
   "require": {
-    "jenner/simple_fork": "^1.1"
   },
   "autoload": {
     "psr-4": {
