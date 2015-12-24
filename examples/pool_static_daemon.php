@@ -9,7 +9,6 @@ function doSt()
     echo $sleep . '：hello leaf!!' . PHP_EOL;
 }
 
-
 $processPool = new Leaf\Pcntl\ProcessPool\ProcessPoolStatic();
 
 for ($i = 0; $i < 20; $i++) {
