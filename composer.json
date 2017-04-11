@@ -1,7 +1,12 @@
 {
-  "name": "leaf/leaf-php-pcntl",
+  "name": "leaf/leaf-php-manager",
   "version": "0.1.0",
   "type": "library",
+  "description": "A PHP process manager",
+  "keywords": [
+    "pcntl",
+    "php"
+  ],
   "homepage": "https://www.leafphp.com",
   "license": "MIT",
   "authors": [
@@ -11,19 +16,13 @@
       "homepage": "http://www.leafphp.com"
     }
   ],
-  "description": "一个基于pcntl并包含了如：PHP的多进程管理、通信处理等，可用于多任务以及异步处理的PHP包",
-  "keywords": [
-    "php 多进程",
-    "pcntl",
-    "php pcntl"
-  ],
   "require": {
+    "php": ">=5.4.0",
+    "psr/log": "~1.0"
   },
   "autoload": {
     "psr-4": {
-      "Leaf\\Pcntl\\": "src/"
+      "Leaf\\Managers\\ProcessManager\\": "src/"
     }
-  },
-  "extra": {
   }
 }
