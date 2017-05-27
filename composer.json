@@ -1,11 +1,13 @@
 {
-  "name": "leaf/leaf-php-manager",
+  "name": "leaf/leaf-php-pcntl",
   "version": "0.1.0",
   "type": "library",
   "description": "A PHP process manager",
   "keywords": [
     "pcntl",
-    "php"
+    "php",
+    "php process poll",
+    "php process manager"
   ],
   "homepage": "https://www.leafphp.com",
   "license": "MIT",
