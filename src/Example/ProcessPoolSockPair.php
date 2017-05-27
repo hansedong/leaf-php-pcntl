@@ -18,18 +18,23 @@ require $autoloader;
 \Leaf\Managers\ProcessManager\Autoloader::register();
 
 //先实例化分布式算法的管理器
+use \Leaf\Managers\ProcessManager\ProcessPoolManagerSocketPair;
 
 //进程池方式, 每个进程处理一个渠道
-$processPool = new \Leaf\Managers\ProcessManager\ProcessPoolManagerOffset();
+$processPool = new ProcessPoolManagerSocketPair();
 
-function task($params = [], $taskId = 0)
+/**
+ * 子进程的处理任务，$data为父进程投递的字符串数据
+ *
+ * @param string $data
+ */
+function task($data = '')
 {
     //你的业务逻辑在这里
-    var_dump([$params, $taskId]);
-    sleep(10);
+    echo "im worker " . getmypid() . "，I receive data：" . $data . PHP_EOL;
 }
 
 echo "多进程处理开始" . PHP_EOL;
-$return = $processPool->setOffset(0, 100000)->setCallBackParams([])->setPoolSize(2, 50)->addPoolTask('task')->execute();
+$return = $processPool->setPoolSize(10)->addPoolTask('task')->setPoolData(["aa", "bb", "ccc", "ddd"])->execute();
 echo "多进程处理结束" . PHP_EOL;
 return $return;

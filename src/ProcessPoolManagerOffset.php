@@ -2,8 +2,6 @@
 
 namespace Leaf\Managers\ProcessManager;
 
-use Leaf\Managers\ProcessManager\Base\ProcessParam;
-
 /**
  * PHP的多进程,切记,不要在子进程中,用父进程已经初始化号的连接
  * Class ProcessPoolManager

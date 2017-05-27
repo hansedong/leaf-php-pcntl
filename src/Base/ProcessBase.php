@@ -240,6 +240,28 @@ class ProcessBase
     }
     
     /**
+     * 检测当前进程是否正在运行
+     * 两种方式：$forceDetect为默认情况下进行探测，如果为1，表示强制探测，强制探测，会使用posix_kill发送信号0。
+     * 不过需要注意的是，使用信号的话，注意程序入口declare(ticks=1)，另外，posix_kill需要给指定进程id发送信号，这里会有几个问题：
+     * ①：理论上，posix_kll($pid,0)的方式，可以检测任意程序，只要有权限（比如root）。
+     * ②：由于进程id，可能会被操作系统回收并重复使用，所以，你无法100%确保要检测的进程id，就是你要检测的目的进程
+     * @note http://www.php.net/manual/zh/function.posix-kill.php comment no.7
+     *
+     * @return int
+     */
+    public function isRunning($forceDetect = 0)
+    {
+        $return = false;
+        if ( !$forceDetect) {
+            $return = ($this->runningStatus == 2) ? true : false;
+        } else {
+            $return = posix_kill($this->getPid(), 0);
+        }
+        
+        return $return;
+    }
+    
+    /**
      * 检测是否正在执行
      *
      * @return int
@@ -292,11 +314,12 @@ class ProcessBase
      * 执行任务
      *
      * @param int $daemon 是否已守护进程的方式运行
+     * @param int $exit   执行完后，是否退出
      *
      * @return $this
      * @throws \Exception
      */
-    public function run($daemon = 0)
+    public function run($daemon = 0, $exit = 1)
     {
         //如果已经运行或运行结束了，执行返回
         if ($this->isStarted() || $this->isFinished()) {
@@ -327,7 +350,9 @@ class ProcessBase
             if ( !is_null($this->task)) {
                 $this->callUserFunc();
             }
-            exit(0);
+            if ($exit) {
+                exit(0);
+            }
         }
         
         return $this;
