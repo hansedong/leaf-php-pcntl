@@ -98,7 +98,8 @@ class ProcessPoolManagerSocketPair
                     $sendRes = $socketPipe->send($sendData);
                 }
             }
-            /*//遍历数据结束，则结束子进程（这种方式，由于要检测信号，造成脚本处理效率低下，所以不推荐使用）
+            //遍历数据结束，则结束子进程
+            /*（这种方式，由于要检测信号，造成脚本处理效率低下，所以不推荐使用）
             foreach ($pool->getProcesses() as $process) {
                 $process->kill();
             }*/
@@ -173,7 +174,13 @@ class ProcessPoolManagerSocketPair
     public function setPoolData($data = [])
     {
         if ( !empty($data)) {
-            $this->poolData = $data;
+            //如果是数组
+            if (is_array($data)) {
+                $this->poolData = $data;
+            } //如果是协程
+            elseif (is_callable($data)) {
+                $this->poolData = $data();
+            }
         }
         
         return $this;

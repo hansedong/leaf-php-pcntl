@@ -31,10 +31,21 @@ $processPool = new ProcessPoolManagerSocketPair();
 function task($data = '')
 {
     //你的业务逻辑在这里
-    echo "im worker " . getmypid() . "，I receive data：" . $data . PHP_EOL;
+    echo $data . PHP_EOL;
 }
 
+/**
+ * 协程，生成1000条数据
+ */
+$sourceData = function () {
+    for ($i = 1; $i <= 1000; $i++) {
+        yield 'my pid：' . getmypid() . '，im number: ' . $i;
+    }
+};
+
 echo "多进程处理开始" . PHP_EOL;
-$return = $processPool->setPoolSize(10)->addPoolTask('task')->setPoolData(["aa", "bb", "ccc", "ddd"])->execute();
+//传统方式
+//$return = $processPool->setPoolSize(10)->addPoolTask('task')->setPoolData(["aa", "bb", "ccc", "ddd"])->execute();
+$return = $processPool->setPoolSize(10)->addPoolTask('task')->setPoolData($sourceData)->execute();
 echo "多进程处理结束" . PHP_EOL;
 return $return;
